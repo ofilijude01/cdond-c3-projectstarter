@@ -115,13 +115,22 @@ jobs:
     docker:
       - image: circleci/node:13.8.0
     steps:
-      - checkout
-      - run:
-          name: "stub"
-          command: "echo stub"
       # Checkout code from git
       # Restore from cache
       # Your job code here
+      - checkout
+      - restore_cache:
+          keys: [frontend-build]
+      - run:
+          name: Run Front-end scan
+          command: |
+            cd frontend
+            npm install
+            npm audit --audit-level=critical
+            exit 0
+      - save_cache:
+          paths: [frontend/node_modules]
+          key: frontend-build
 
   scan-backend:
     docker:
