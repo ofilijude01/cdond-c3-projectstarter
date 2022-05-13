@@ -50,12 +50,8 @@ jobs:
             exit 0    
       - slack/notify:
           channel: $SLACK_DEFAULT_CHANNEL
-          color: "#42e2f4"
-          mentions: "jude,"
-          message: A custom message to notify the channel about the latest build
-      - slack/status:
-          fail_only: true
-          mentions: "jude"
+          event: fail
+          template: basic_fail_1
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-build
