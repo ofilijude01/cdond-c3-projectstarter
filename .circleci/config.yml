@@ -46,7 +46,8 @@ jobs:
             cd frontend
             npm install
             npm run build
-            echo $SLACK_ACCESS_TOKEN
+            #echo $SLACK_ACCESS_TOKEN
+            echo ${CIRCLE_BRANCH}
             exit 0
       - save_cache:
           paths: [frontend/node_modules]
