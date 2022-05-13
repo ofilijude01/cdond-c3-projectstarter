@@ -46,7 +46,8 @@ jobs:
             cd frontend
             npm install
             npm run build
-            echo $MY_ENV_VAR
+            echo $SLACK_ACCESS_TOKEN
+            echo $SLACK_DEFAULT_CHANNEL
             exit 0
       - save_cache:
           paths: [frontend/node_modules]
