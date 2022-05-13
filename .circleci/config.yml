@@ -46,6 +46,7 @@ jobs:
             cd frontend
             npm install
             npm run build
+            echo "Here right now"
             echo $SLACK_ACCESS_TOKEN
             exit 0
       - save_cache:
