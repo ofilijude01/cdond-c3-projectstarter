@@ -58,7 +58,7 @@ jobs:
                   "fields": [
                     {
                       "type": "plain_text",
-                      "text": "*This is a text notification*",
+                      "text": "*The front-end build job has failed. This Workflow did not succeed*",
                       "emoji": true
                     }
                   ]
