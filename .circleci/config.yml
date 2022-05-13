@@ -46,9 +46,16 @@ jobs:
             cd frontend
             npm install
             npm run build
-            echo "Here right now"
-            echo $SLACK_ACCESS_TOKEN
-            exit 0
+            echo "Front-end build successful"
+            exit 0    
+      - slack/notify:
+          channel: $SLACK_DEFAULT_CHANNEL
+          color: "#42e2f4"
+          mentions: "jude,"
+          message: A custom message to notify the channel about the latest build
+      - slack/status:
+          fail_only: true
+          mentions: "jude"
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-build
