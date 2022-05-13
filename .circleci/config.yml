@@ -46,8 +46,7 @@ jobs:
             cd frontend
             npm install
             npm run build
-            #echo $SLACK_ACCESS_TOKEN
-            echo ${CIRCLE_BRANCH}
+            echo $SLACK_ACCESS_TOKEN
             exit 0
       - save_cache:
           paths: [frontend/node_modules]
@@ -336,7 +335,8 @@ jobs:
 workflows:
   default:
     jobs:
-      - build-frontend
+      - build-frontend:      
+          context: udapeople # has an env var called MY_ENV_VAR
       - build-backend
       - test-frontend:
           requires: [build-frontend]
