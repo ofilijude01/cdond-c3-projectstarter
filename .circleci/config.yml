@@ -82,7 +82,24 @@ jobs:
             cd backend
             npm install
             npm run build
-            exit 0
+      - slack/notify:
+          channel: $SLACK_DEFAULT_CHANNEL
+          custom: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "plain_text",
+                      "text": "*The back-end build job has failed. This Workflow did not succeed*",
+                      "emoji": true
+                    }
+                  ]
+                }
+              ]
+            }
+          event: fail
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build
@@ -103,6 +120,24 @@ jobs:
             cd frontend
             npm install
             npm run test
+      - slack/notify:
+          channel: $SLACK_DEFAULT_CHANNEL
+          custom: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "plain_text",
+                      "text": "*The front-end test job has failed. This Workflow did not succeed*",
+                      "emoji": true
+                    }
+                  ]
+                }
+              ]
+            }
+          event: fail
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-build
@@ -134,7 +169,7 @@ jobs:
                   "fields": [
                     {
                       "type": "plain_text",
-                      "text": "*The front-end test job has failed. This Workflow did not succeed*",
+                      "text": "*The back-end test job has failed. This Workflow did not succeed*",
                       "emoji": true
                     }
                   ]
