@@ -276,23 +276,26 @@ jobs:
 
   # Configure Udapeople infrastructure
   configure-infrastructure:
-    docker:
-      - image: circleci/node:13.8.0
-      # Docker image here that supports Ansible
+    docker: # Docker image here that supports Ansible
+      - image: python:3.7-alpine3.12
     steps:
-      # Checkout code from git
-      # Add ssh keys with fingerprint
-      # attach workspace
+      - checkout
+      - run: export ANSIBLE_HOST_KEY_CHECKING=False
+      - attach_workspace:
+          at: ~/
+      - add_ssh_keys:
+          fingerprints: 
+             - e8:88:61:21:f7:92:67:bb:f8:37:1a:03:55:4f:54:b2
       - run:
           name: Install dependencies
           command: |
-            # Your code here
-            exit 0
+             apk add --update ansible
+             apk add openssh-client
       - run:
           name: Configure server
           command: |
-            # Your code here
-            exit 0
+              ansible-playbook -vvvv -i ~/project/.circleci/ansible/inventory.txt -c ssh .circleci/ansible/configure-server.yml
+
       # Here's where you will add some code to rollback on failure      
 
   run-migrations:
@@ -408,10 +411,10 @@ jobs:
         - run:
             name: Remove old stacks and files
             command: |
-              if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
-              then
-                # your code here
-              fi
+            #  if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
+            #  then
+            #    # your code here
+            #  fi
             
 workflows:
   default:
