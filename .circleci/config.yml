@@ -3,8 +3,8 @@ version: 2.1
 commands:
   destroy-environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
-    parameters:
-      # Add parameter here   
+    #parameters:
+      # Add parameter here   #
     steps:
       - run:
           name: Destroy environments
@@ -14,7 +14,7 @@ commands:
             exit 1
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
-    parameters:
+    #parameters:
       # Add parameter here     
     steps:
       - run:
@@ -42,8 +42,10 @@ jobs:
       - run:
           name: Build front-end
           command: |
-            # Your code here
-            exit 1
+            cd frontend
+            npm install
+            npm run build
+            exit 0
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-build
@@ -58,47 +60,85 @@ jobs:
       - run:
           name: Back-end build
           command: |
-             # Your code here
-             exit 1
+            cd backend
+            npm install
+            npm run build
+            exit 0
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build
 
   test-frontend:
     docker:
-      # Docker image here
+      - image: circleci/node:13.8.0
     steps:
       # Checkout code from git
       # Restore from cache
       # Your job code here
+      - checkout
+      - restore_cache:
+          keys: [frontend-build]
+      - run:
+          name: Run front-end test
+          command: |
+            cd frontend
+            npm install
+            npm run test
+            exit 0
+      - save_cache:
+          paths: [frontend/node_modules]
+          key: frontend-build
+
                 
   test-backend:
     docker:
-      # Docker image here
+      - image: circleci/node:13.8.0
     steps:
       # Checkout code from git
       # Restore from cache
       # Your job code here
+      - checkout
+      - restore_cache:
+          keys: [backend-build]
+      - run:
+          name: Run Back-end test
+          command: |
+            cd backend
+            npm install
+            npm run test
+            exit 0
+      - save_cache:
+          paths: [backend/node_modules]
+          key: backend-build
             
   scan-frontend:
     docker:
-      # Docker image here
+      - image: circleci/node:13.8.0
     steps:
+      - checkout
+      - run:
+          name: "stub"
+          command: "echo stub"
       # Checkout code from git
       # Restore from cache
       # Your job code here
 
   scan-backend:
     docker:
+      - image: circleci/node:13.8.0
       # Docker image here
     steps:
+      - checkout
+      - run:
+          name: "stub"
+          command: "echo stub"
       # Checkout code from git
       # Restore from cache
       # Your job code here
-  
-  #deploy udapeople infrastructure
+
   deploy-infrastructure:
     docker:
+      - image: circleci/node:13.8.0
       # Docker image here that supports AWS CLI
     steps:
       # Checkout code from git
@@ -131,9 +171,9 @@ jobs:
             - project/.circleci/ansible/inventory.txt
       # Here's where you will add some code to rollback on failure      
 
-  #Configure udapeople infrastructure
   configure-infrastructure:
     docker:
+      - image: circleci/node:13.8.0
       # Docker image here that supports Ansible
     steps:
       # Checkout code from git
@@ -153,6 +193,7 @@ jobs:
 
   run-migrations:
     docker:
+      - image: circleci/node:13.8.0
       # Docker image here that supports NodeJS
     steps:
       # Checkout code from git
@@ -170,6 +211,7 @@ jobs:
 
   deploy-frontend:
     docker:
+      - image: circleci/node:13.8.0
       # Docker image here that supports AWS CLI
     steps:
       # Checkout code from git
@@ -191,6 +233,7 @@ jobs:
                     
   deploy-backend:
     docker:
+      - image: circleci/node:13.8.0
       # Docker image here that supports Ansible
     steps:
       # Checkout code from git
@@ -208,6 +251,7 @@ jobs:
 
   smoke-test:
     docker:
+      - image: circleci/node:13.8.0
       # Lightweight Docker image 
     steps:
       # Checkout code from git
@@ -231,6 +275,7 @@ jobs:
 
   cloudfront-update:
     docker:
+      - image: circleci/node:13.8.0
       # Docker image here that supports AWS CLI
     steps:
       # Checkout code from git
@@ -244,24 +289,25 @@ jobs:
             # your code here
       # Here's where you will add some code to rollback on failure  
 
-cleanup:
-    docker:
-      # Docker image here
-    steps:
-      # Checkout code from git
-      - run:
-          name: Get old stack workflow id
-          command: |
-            # your code here
-            export OldWorkflowID="the id here"
-            export STACKS=[] #put the list of stacks here
-      - run:
-          name: Remove old stacks and files
-          command: |
-            if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
-            then
+  cleanup:
+      docker:
+        - image: circleci/node:13.8.0
+        # Docker image here
+      steps:
+        # Checkout code from git
+        - run:
+            name: Get old stack workflow id
+            command: |
               # your code here
-            fi
+              export OldWorkflowID="the id here"
+              export STACKS=[] #put the list of stacks here
+        - run:
+            name: Remove old stacks and files
+            command: |
+              if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
+              then
+                # your code here
+              fi
             
 workflows:
   default:
