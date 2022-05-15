@@ -226,7 +226,8 @@ jobs:
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build
-
+          
+  # Deploy Udapeople infrastructure
   deploy-infrastructure:
     docker:
       - image: circleci/node:13.8.0
@@ -262,6 +263,7 @@ jobs:
             - project/.circleci/ansible/inventory.txt
       # Here's where you will add some code to rollback on failure      
 
+  # Configure Udapeople infrastructure
   configure-infrastructure:
     docker:
       - image: circleci/node:13.8.0
