@@ -95,7 +95,8 @@ jobs:
       # Checkout code from git
       # Restore from cache
       # Your job code here
-
+  
+  #deploy udapeople infrastructure
   deploy-infrastructure:
     docker:
       # Docker image here that supports AWS CLI
@@ -130,6 +131,7 @@ jobs:
             - project/.circleci/ansible/inventory.txt
       # Here's where you will add some code to rollback on failure      
 
+  #Configure udapeople infrastructure
   configure-infrastructure:
     docker:
       # Docker image here that supports Ansible
