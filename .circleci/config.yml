@@ -3,36 +3,38 @@ orbs:
   slack: circleci/slack@4.10.1
 commands:
   destroy-environment:
-    description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
+    description: Destroy back-end and front-end cloudformation stacks given a workflow name.
     parameters:
-      to:
+      workflow_name:
         type: string
     steps:
       - run:
           name: Destroy environments
           when: on_fail
           command: |
-             aws cloudformation delete-stack --stack-name << parameters.to >>
+             aws cloudformation delete-stack --stack-name << parameters.workflow_name >>
+             aws s3 rm s3://udapeople-htheiery939487973hsh/ --recursive
              
 
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
-    #parameters:
-      # Add parameter here     
+    parameters:
+      workflow_name:
+        type: string
     steps:
       - run:
           name: Revert migrations
-          # Add when this will run
+          when: on_fail
           command: |
             # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
-            SUCCESS = 1
-            if(( $SUCCESS==1 )); 
+            SUCCESS=$(curl --insecure  https://kvdb.io/23Dbi96xCKybVjYCEiUWNYg9/<< parameters.workflow_name>>)
+            # Logic for reverting the database state
+            if (( $SUCCESS == 1 ));
             then
-            #  cd ~/project/backend
-            #  npm install
-            #  Add revert code here. You can find this in the Getting Started section.
-              exit 1
-            fi
+                cd ~/project/backend
+                npm install
+                npm run migration:revert
+            fi 
             
 jobs:
   build-frontend:
@@ -241,7 +243,7 @@ jobs:
                 --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  \
                 --tags project=udapeople
       - destroy-environment:
-            to: udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}
+            workflow_name: udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}
       - run:
           name: Ensure front-end infrastructure exist
           command: |
@@ -251,7 +253,7 @@ jobs:
                 --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  \
                 --tags project=udapeople
       - destroy-environment:
-            to: udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}
+            workflow_name: udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}
             
       - run:
           name: Add back-end ip to ansible inventory
@@ -327,7 +329,7 @@ jobs:
               yum update
               yum install -y tar gzip
               yum install -y python3
-              yum install -y ansible
+              yum install -y nodejs
       - attach_workspace:
           at: ~/
       - run:
@@ -349,9 +351,9 @@ jobs:
               aws s3 cp dist s3://udapeople-htheiery939487973hsh --recursive
       #Destroy the environment and revert the migration on fail
       - destroy-environment:
-            to: udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}
+            workflow_name: udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}
       - destroy-environment:
-            to: udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}
+            workflow_name: udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}
       # Here's where you will add some code to rollback on failure      
                     
   deploy-backend:
@@ -370,6 +372,7 @@ jobs:
           command: |
              apk add --update ansible
              apk add openssh-client
+             apk add --update nodejs-current npm
       - run:
           name: Deploy backend
           command: |
@@ -420,7 +423,13 @@ jobs:
                   return 1
                 else
                   return 1
-                fi
+                fi       
+      - destroy-environment:
+            workflow_name: udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}
+      - destroy-environment:
+            workflow_name: udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}
+      - revert-migrations:
+            workflow_name: migration_${CIRCLE_WORKFLOW_ID:0:7}
       # Here's where you will add some code to rollback on failure  
 
   cloudfront-update:
