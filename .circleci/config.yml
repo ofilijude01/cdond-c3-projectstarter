@@ -320,18 +320,14 @@ jobs:
 
   deploy-frontend:
     docker:
-      - image: doctrine/nodejs-aws-cli:latest
-      #amazon/aws-cli 
+      - image: circleci/node:13.8.0
     steps:
       - checkout
       - run:
           name: Install dependencies
           command: |
-              yum update
-              yum install -y tar gzip
-              yum install -y python3
-              #yum -y install epel-release
-              #yum -y install nodejs npm
+              apt-get install python-pip python-dev
+              pip install awscli
       - attach_workspace:
           at: ~/
       - run:
