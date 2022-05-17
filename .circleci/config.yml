@@ -12,8 +12,8 @@ commands:
           name: Destroy environments
           when: on_fail
           command: |
-             aws cloudformation delete-stack --stack-name << parameters.workflow_name >>
              aws s3 rm s3://udapeople-htheiery939487973hsh/ --recursive
+             aws cloudformation delete-stack --stack-name << parameters.workflow_name >>
              
 
   revert-migrations:
@@ -408,9 +408,9 @@ jobs:
           command: |
               if curl "${API_URL}/api/status" | grep "ok"
               then
-                  return 0
+                  exit 0
               else
-                  return 1
+                  exit 1
               fi
       - run:
           name: Frontend smoke test.
@@ -419,17 +419,16 @@ jobs:
                 echo ${URL} 
                 if curl -s ${URL} | grep "Welcome"
                 then
-                    # Change this to 0 after the job fails
-                  return 1
+                  exit 0
                 else
-                  return 1
+                  exit 1
                 fi       
+      - revert-migrations:
+            workflow_name: migration_${CIRCLE_WORKFLOW_ID:0:7}
       - destroy-environment:
             workflow_name: udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}
       - destroy-environment:
             workflow_name: udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}
-      - revert-migrations:
-            workflow_name: migration_${CIRCLE_WORKFLOW_ID:0:7}
       # Here's where you will add some code to rollback on failure  
 
   cloudfront-update:
