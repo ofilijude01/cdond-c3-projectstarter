@@ -396,7 +396,8 @@ jobs:
           name: Install dependencies
           command: |
              sudo apt-get install python-pip python-dev
-             sudo pip install awscli curl
+             sudo pip install awscli
+             sudo apt-get install curl
       - run:
           name: Get backend url
           command: |
