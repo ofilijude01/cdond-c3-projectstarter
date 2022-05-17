@@ -389,13 +389,15 @@ jobs:
 
   smoke-test:
     docker:
-      - image: alpine:latest
+      - image: circleci/node:13.8.0
     steps:
       - checkout
       - run:
           name: Install dependencies
           command: |
              apk add --update curl
+             sudo apt-get install python-pip python-dev
+             sudo pip install awscli curl
       - run:
           name: Get backend url
           command: |
