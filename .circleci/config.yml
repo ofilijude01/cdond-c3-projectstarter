@@ -320,7 +320,8 @@ jobs:
 
   deploy-frontend:
     docker:
-      - image: amazon/aws-cli 
+      - image: doctrine/nodejs-aws-cli:latest
+      #amazon/aws-cli 
     steps:
       - checkout
       - run:
@@ -329,8 +330,8 @@ jobs:
               yum update
               yum install -y tar gzip
               yum install -y python3
-              yum -y install epel-release
-              yum -y install nodejs npm
+              #yum -y install epel-release
+              #yum -y install nodejs npm
       - attach_workspace:
           at: ~/
       - run:
