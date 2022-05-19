@@ -347,9 +347,10 @@ jobs:
               tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
               aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
       #Destroy the environment and revert the migration on fail
+      - revert-migrations:
+            workflow_name: migration_${CIRCLE_WORKFLOW_ID:0:7}
       - destroy-environment:
-            workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
-      # Here's where you will add some code to rollback on failure      
+            workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}    
                     
   deploy-backend:
     docker: # Docker image that supports Ansible by default
@@ -369,9 +370,11 @@ jobs:
           command: |
              apk add --update ansible
              apk add openssh-client
-             apk add --update nodejs-current npm
+             apk add --update nodejs-current npm curl
+             pip install awscli
+
       - run:
-          name: Copy backend
+          name: compress and prepare backend app
           command: |
             cd backend
             npm i
@@ -379,8 +382,6 @@ jobs:
             cd ..
             # Zip the directory
             tar -C backend -czvf artifact.tar.gz .
-            mkdir -p ~/project/.circleci/ansible/roles/deploy_backend/files/
-            mv artifact.tar.gz ~/project/.circleci/ansible/roles/deploy_backend/files
       - run:
           name: Deploy backend
           command: |
@@ -389,9 +390,10 @@ jobs:
             cat inventory.txt
             ansible-galaxy install weareinteractive.environment
             ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.txt deploy-backend.yml
+      - revert-migrations:
+            workflow_name: migration_${CIRCLE_WORKFLOW_ID:0:7}
       - destroy-environment:
             workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
-
   smoke-test:
     docker:
       - image: circleci/node:13.8.0
