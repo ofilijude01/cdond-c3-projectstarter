@@ -3,18 +3,19 @@ orbs:
   slack: circleci/slack@4.10.1
 commands:
   destroy-environment:
-    description: Destroy back-end and front-end cloudformation stacks given a workflow name.
+    description: Destroy backend and frontend cloudformation stacks given a workflow ID.
     parameters:
-      workflow_name:
+      workflow_id:
         type: string
     steps:
       - run:
           name: Destroy environments
           when: on_fail
           command: |
-             aws s3 rm s3://udapeople-htheiery939487973hsh/ --recursive
-             aws cloudformation delete-stack --stack-name << parameters.workflow_name >>
-             
+              echo "Destroying environments: <<parameters.workflow_id>> "
+              aws s3 rm s3://udapeople-<<parameters.workflow_id>> --recursive
+              aws cloudformation delete-stack --stack-name udapeople-backend-<<parameters.workflow_id>>
+              aws cloudformation delete-stack --stack-name udapeople-frontend-<<parameters.workflow_id>>
 
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
@@ -242,8 +243,6 @@ jobs:
                 --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
                 --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  \
                 --tags project=udapeople
-      - destroy-environment:
-            workflow_name: udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}
       - run:
           name: Ensure front-end infrastructure exist
           command: |
@@ -253,7 +252,7 @@ jobs:
                 --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  \
                 --tags project=udapeople
       - destroy-environment:
-            workflow_name: udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}
+            workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
             
       - run:
           name: Add back-end ip to ansible inventory
@@ -349,13 +348,11 @@ jobs:
               aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
       #Destroy the environment and revert the migration on fail
       - destroy-environment:
-            workflow_name: udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}
-      - destroy-environment:
-            workflow_name: udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}
+            workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
       # Here's where you will add some code to rollback on failure      
                     
   deploy-backend:
-    docker: # Docker image here that supports Ansible
+    docker: # Docker image that supports Ansible by default
       - image: python:3.7-alpine3.12
     steps:
       - checkout
@@ -365,6 +362,8 @@ jobs:
       - add_ssh_keys:
           fingerprints: 
              - e8:88:61:21:f7:92:67:bb:f8:37:1a:03:55:4f:54:b2
+      - restore_cache:
+          keys: [backend-build]
       - run:
           name: Install dependencies
           command: |
@@ -372,20 +371,26 @@ jobs:
              apk add openssh-client
              apk add --update nodejs-current npm
       - run:
-          name: Deploy backend
+          name: Copy backend
           command: |
-            # your code here
             cd backend
             npm i
             npm run build
             cd ..
             # Zip the directory
             tar -C backend -czvf artifact.tar.gz .
+            mkdir -p ~/project/.circleci/ansible/roles/deploy_backend/files/
+            mv artifact.tar.gz ~/project/.circleci/ansible/roles/deploy_backend/files
+      - run:
+          name: Deploy backend
+          command: |
             cd .circleci/ansible
             echo "Contents  of the inventory.txt file is -------"
             cat inventory.txt
-            ansible-playbook -i inventory.txt deploy-backend.yml
-      # Here's where you will add some code to rollback on failure  
+            ansible-galaxy install weareinteractive.environment
+            ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.txt deploy-backend.yml
+      - destroy-environment:
+            workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
 
   smoke-test:
     docker:
@@ -426,9 +431,7 @@ jobs:
       - revert-migrations:
             workflow_name: migration_${CIRCLE_WORKFLOW_ID:0:7}
       - destroy-environment:
-            workflow_name: udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}
-      - destroy-environment:
-            workflow_name: udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}
+            workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
       # Here's where you will add some code to rollback on failure  
 
   cloudfront-update:
@@ -445,7 +448,7 @@ jobs:
           command: |
             aws cloudformation deploy \
                 --template-file .circleci/files/cloudfront.yml \
-                --stack-name InitialStack \
+                --stack-name udapeople-cloudfront \
                 --parameter-overrides WorkflowID="udapeople-${CIRCLE_WORKFLOW_ID:0:7}" \
                 --tags project=udapeople
       # Here's where you will add some code to rollback on failure  
@@ -504,7 +507,7 @@ workflows:
           requires: [test-frontend, test-backend, scan-frontend, scan-backend]
           #filters:
           #  branches:
-          #    only: [test-feature-branch]
+          #    only: [master]
       - configure-infrastructure:
           requires: [deploy-infrastructure]
       - run-migrations:
