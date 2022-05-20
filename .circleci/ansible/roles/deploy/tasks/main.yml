@@ -32,11 +32,11 @@
 - name: "Move artifact to server."
   copy:
     src: /root/project/artifact.tar.gz
-    dest: ~/home/ubuntu
+    dest: ~
 
 - name: "deploy artifact"
   shell: |
-    cd ~/home/ubuntu
+    cd ~
     tar -xzvf artifact.tar.gz -C backend
     rm artifact.tar.gz
     cd backend/
