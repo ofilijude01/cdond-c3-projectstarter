@@ -29,23 +29,18 @@
     production: yes
     state: present
     
-- name: "Create app directory"
-  file:
-    path: ~/app
-    state: directory
-
-- name: "Copy app"
+- name: "Move artifact to server."
   copy:
-    src: artifact.tar.gz
-    dest: ~/app/artifact.tar.gz
+    src: /root/project/artifact.tar.gz
+    dest: ~/home/ubuntu
 
-- name: "Prepare app artifact"
+- name: "deploy artifact"
   shell: |
-    cd ~/app
+    cd ~/home/ubuntu
     tar -xzvf artifact.tar.gz -C backend
     rm artifact.tar.gz
     cd backend/
     npm install
     npm audit fix && npm run build
     cd dist
-    pm2 start npm -- start
+    pm2 start npm --name backend -- start
