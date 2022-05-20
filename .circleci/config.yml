@@ -14,8 +14,8 @@ commands:
           command: |
               echo "Destroying environments: <<parameters.workflow_id>> "
               aws s3 rm s3://udapeople-<<parameters.workflow_id>> --recursive
-              aws cloudformation delete-stack --stack-name udapeople-backend-<<parameters.workflow_id>>
-              aws cloudformation delete-stack --stack-name udapeople-frontend-<<parameters.workflow_id>>
+              #aws cloudformation delete-stack --stack-name udapeople-backend-<<parameters.workflow_id>>
+              #aws cloudformation delete-stack --stack-name udapeople-frontend-<<parameters.workflow_id>>
 
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
@@ -448,12 +448,7 @@ jobs:
       - run:
           name: Backend smoke test.
           command: |
-              if curl "${API_URL}/api/status" | grep "ok"
-              then
-                  exit 0
-              else
-                  exit 1
-              fi
+                 curl "${API_URL}/api/status" 
       - run:
           name: Frontend smoke test.
           command: |
