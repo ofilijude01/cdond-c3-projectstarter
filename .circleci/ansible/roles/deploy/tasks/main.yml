@@ -28,15 +28,20 @@
     global: yes
     production: yes
     state: present
-    
-- name: "Move artifact to server."
+
+- name: "Create app directory in server"
+  file:
+    path: ~/app
+    state: directory
+
+- name: "Copy artifact to server."
   copy:
     src: /root/project/artifact.tar.gz
-    dest: ~
+    dest: ~/app/artifact.tar.gz
 
-- name: "deploy artifact"
+- name: "Extract and deploy artifact"
   shell: |
-    cd ~
+    cd ~/app
     tar -xzvf artifact.tar.gz -C backend
     rm artifact.tar.gz
     cd backend/
