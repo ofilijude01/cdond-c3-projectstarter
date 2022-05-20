@@ -235,6 +235,7 @@ jobs:
           name: Install tar utility
           command: |
               yum install -y tar gzip
+      - run: echo "Workflow ID is ${CIRCLE_WORKFLOW_ID}"
       - run:
           name: Ensure back-end infrastructure exists
           command: |              
@@ -343,8 +344,10 @@ jobs:
       - run:
           name: Get backend url
           command: |
-              export BACKEND_IP=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress' \ 
-              --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --output text)
+              export BACKEND_IP=$(aws ec2 describe-instances \
+                --query 'Reservations[*].Instances[*].PublicIpAddress' \
+                --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+                --output text)
               export API_URL="http://${BACKEND_IP}:3030"
               echo "API_URL = ${API_URL}"
               echo "API_URL=${API_URL}" >> frontend/.env
