@@ -2,38 +2,16 @@
 - name: "Move backend files to server."
   copy:
     src: /root/project/artifact.tar.gz
-    dest: ~/home/ubuntu
+    dest: ~
+
+- name: "Create app backend directory"
+  file:
+    path: ~/backend
+    state: directory
 
 - name: "install dependencies"
   shell: |
-    cd ~/home/ubuntu
-    tar -xzvf artifact.tar.gz -C backend
-    rm artifact.tar.gz
-    cd backend/
-    npm install
-    npm audit fix && npm run build
-    cd dist
-    pm2 stop default
-    pm2 start npm -- start
-
-- name: "Create  app directory"
-  file:
-    path: ~/app
-    state: directory
-    
-- name: "Create app backend directory"
-  file:
-    path: ~/app/backend
-    state: directory
-
-- name: "Copy app"
-  copy:
-    src: artifact.tar.gz
-    dest: ~/app/artifact.tar.gz
-
-- name: "Prepare app artifact"
-  shell: |
-    cd ~/app
+    cd ~
     tar -xzvf artifact.tar.gz -C backend
     rm artifact.tar.gz
     cd backend/
