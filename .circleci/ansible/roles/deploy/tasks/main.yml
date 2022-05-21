@@ -18,4 +18,4 @@
     npm install
     npm audit fix && npm run build
     cd dist
-    pm2 start npm -- start
+    pm2 start npm --name backend -- start
