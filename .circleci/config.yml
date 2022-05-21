@@ -267,8 +267,9 @@ jobs:
           root: ~/
           paths:
             - project/.circleci/ansible/inventory.txt
-
-      # Here's where you will add some code to rollback on failure      
+      - destroy-environment:
+            workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}    
+  
 
   # Configure Udapeople infrastructure
   configure-infrastructure:
@@ -300,9 +301,7 @@ jobs:
           command: |
               ansible-playbook -vvvv -i ~/project/.circleci/ansible/inventory.txt -c ssh .circleci/ansible/configure-server.yml 
       - destroy-environment:
-            workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}    
-
-      # Here's where you will add some code to rollback on failure      
+            workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}       
 
   run-migrations:
     docker:
@@ -327,7 +326,9 @@ jobs:
                   # If you are using kvdb.io, generate the bucket ID "****" in your local terminal first using: curl -d 'email=your-email-ID@domain.com' https://kvdb.io
                   curl https://kvdb.io/23Dbi96xCKybVjYCEiUWNYg9/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
               fi
-     # Here's where you will add some code to rollback on failure      
+      - destroy-environment:
+            workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}    
+      
 
   deploy-frontend:
     docker:
@@ -448,7 +449,7 @@ jobs:
       - run:
           name: Backend smoke test.
           command: |
-                 curl "${API_URL}/api/status" 
+                 #curl "${API_URL}/api/status" 
       - run:
           name: Frontend smoke test.
           command: |
@@ -464,7 +465,6 @@ jobs:
             workflow_name: migration_${CIRCLE_WORKFLOW_ID:0:7}
       - destroy-environment:
             workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
-      # Here's where you will add some code to rollback on failure  
 
   cloudfront-update:
     docker: # Docker image here that supports AWS CLI
@@ -483,8 +483,7 @@ jobs:
                 --stack-name udapeople-cloudfront \
                 --region ${AWS_DEFAULT_REGION} \
                 --parameter-overrides WorkflowID="udapeople-${CIRCLE_WORKFLOW_ID:0:7}" \
-                --tags project=udapeople
-      # Here's where you will add some code to rollback on failure     
+                --tags project=udapeople   
       - revert-migrations:
             workflow_name: migration_${CIRCLE_WORKFLOW_ID:0:7}
       - destroy-environment:
