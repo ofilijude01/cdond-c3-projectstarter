@@ -356,7 +356,7 @@ jobs:
                 --query 'Reservations[*].Instances[*].PublicIpAddress' \
                 --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
                 --output text)
-              export API_URL="http://${BACKEND_IP}:3030"
+              export API_URL="https://${BACKEND_IP}:3030"
               echo "API_URL = ${API_URL}"
               echo "API_URL=${API_URL}" >> frontend/.env
               cat frontend/.env
@@ -393,8 +393,6 @@ jobs:
       - add_ssh_keys:
           fingerprints: 
              - e8:88:61:21:f7:92:67:bb:f8:37:1a:03:55:4f:54:b2
-      - restore_cache:
-          keys: [backend-build]
       - run:
           name: Install dependencies
           command: |
@@ -443,7 +441,7 @@ jobs:
                 --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
                 --output text)
 
-               export API_URL="http://${BACKEND_IP}:3030"
+               export API_URL="https://${BACKEND_IP}:3030"
 
                echo "${API_URL}"
       - run:
